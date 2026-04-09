@@ -1,8 +1,14 @@
 # Cloudflare Pages 重定向规则
-# 将子域名 house.loan-compute.homes 重定向到根域名 loan-compute.homes
+# 注意：_redirects 文件只支持相对路径重定向，不支持跨域名的绝对URL重定向
+# 跨域名重定向需要在 Cloudflare 控制台的 Redirect Rules 中配置
 
-# 主域名重定向 - 将子域名的所有请求重定向到根域名的对应路径
-https://house.loan-compute.homes/* https://loan-compute.homes/:splat 301
-
-# 保留其他可能的重定向规则
+# 示例：相对路径重定向规则
 # /old-path /new-path 301
+# /blog/* /articles/:splat 301
+# /deprecated.html /archive/deprecated.html 302
+
+# 注意：house.loan-compute.homes 到 loan-compute.homes 的重定向
+# 需要在 Cloudflare 控制台的 Redirect Rules 中配置，使用以下设置：
+# - Source URL: https://house.loan-compute.homes/*
+# - Destination URL: https://loan-compute.homes/$1
+# - Status code: 301 - Permanent Redirect
