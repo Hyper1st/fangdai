@@ -1,0 +1,8 @@
+# Cloudflare Pages 重定向规则
+# 将子域名 house.loan-compute.homes 重定向到根域名 loan-compute.homes
+
+# 主域名重定向 - 将子域名的所有请求重定向到根域名的对应路径
+https://house.loan-compute.homes/* https://loan-compute.homes/:splat 301
+
+# 保留其他可能的重定向规则
+# /old-path /new-path 301

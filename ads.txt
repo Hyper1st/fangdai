@@ -1,0 +1,15 @@
+# 房贷计算器 - AdSense ads.txt 文件
+# 请替换为您的实际 AdSense publisher ID
+# 格式: google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+
+# 占位内容 - 用于 AdSense 审核准备
+# 请替换为以下实际信息:
+# 1. 登录 Google AdSense 账户
+# 2. 获取您的 publisher ID (格式: pub-XXXXXXXXXXXXXXXX)
+# 3. 将下方占位行替换为您的实际信息
+
+# 占位行 - 请替换为您的 AdSense publisher ID
+# google.com, pub-REPLACE_WITH_YOUR_ADSENSE_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+
+# 审核期间可以先使用此占位文件，通过审核后再更新为实际信息
+# 更多信息请参考: https://support.google.com/adsense/answer/1704348
