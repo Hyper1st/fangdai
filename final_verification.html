@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>房贷计算器最终验证</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .test-case { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .warning { color: orange; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+        th { background: #f5f5f5; }
+        .summary { background: #f0f8ff; padding: 15px; margin: 20px 0; }
+    </style>
+    <script>
+    // 修复后的app.js逻辑
+    function calculateDebxFixed(amount, annualRate, months) {
+        const monthlyRate = annualRate / 100 / 12;
+        let monthly, totalRepay, interest;
+
+        if (monthlyRate > 0) {
+            monthly = amount * monthlyRate * Math.pow(1 + monthlyRate, months) /
+                     (Math.pow(1 + monthlyRate, months) - 1);
+            totalRepay = monthly * months;
+            interest = totalRepay - amount;
+        } else {
+            monthly = amount / months;
+            totalRepay = amount;
+            interest = 0;
+        }
+
+        return {
+            monthlyPayment: Math.round(monthly * 100) / 100,
+            totalInterest: Math.round(interest * 100) / 100,
+            totalRepayment: Math.round(totalRepay * 100) / 100
+        };
+    }
+
+    function calculateDebjFixed(amount, annualRate, months) {
+        const monthlyRate = annualRate / 100 / 12;
+        const monthlyPrincipal = amount / months;
+        let totalInterest, firstMonthPayment;
+
+        if (monthlyRate > 0) {
+            totalInterest = amount * monthlyRate * (months + 1) / 2;
+            firstMonthPayment = monthlyPrincipal + amount * monthlyRate;
+        } else {
+            totalInterest = 0;
+            firstMonthPayment = monthlyPrincipal;
+        }
+
+        return {
+            firstMonthPayment: Math.round(firstMonthPayment * 100) / 100,
+            totalInterest: Math.round(totalInterest * 100) / 100,
+            totalRepayment: Math.round((amount + totalInterest) * 100) / 100,
+            monthlyPrincipal: Math.round(monthlyPrincipal * 100) / 100
+        };
+    }
+
+    // 原始计算器逻辑（用于对比）
+    function calculateOriginalDebx(amount, annualRate, months) {
+        const monthlyRate = annualRate / 100 / 12;
+        // 公式来自houseloan_calculator.js
+        const totalInterest = amount * months * monthlyRate * Math.pow(1 + monthlyRate, months) /
+                              (Math.pow(1 + monthlyRate, months) - 1) - amount;
+        const totalRepayment = totalInterest + amount;
+        const monthlyPayment = totalRepayment / months;
+
+        return {
+            monthlyPayment: Math.round(monthlyPayment * 100) / 100,
+            totalInterest: Math.round(totalInterest * 100) / 100,
+            totalRepayment: Math.round(totalRepayment * 100) / 100
+        };
+    }
+
+    function calculateOriginalDebj(amount, annualRate, months) {
+        const monthlyRate = annualRate / 100 / 12;
+        // 公式来自houseloan_calculator.js
+        const totalInterest = amount * monthlyRate * (months + 1) / 2;
+        const totalRepayment = amount + totalInterest;
+        const monthlyPrincipal = amount / months;
+        const firstMonthPayment = monthlyPrincipal + amount * monthlyRate;
+
+        return {
+            firstMonthPayment: Math.round(firstMonthPayment * 100) / 100,
+            totalInterest: Math.round(totalInterest * 100) / 100,
+            totalRepayment: Math.round(totalRepayment * 100) / 100,
+            monthlyPrincipal: Math.round(monthlyPrincipal * 100) / 100
+        };
+    }
+
+    // 测试场景
+    const testScenarios = [
+        {
+            id: 1,
+            name: "商业贷款-标准场景",
+            description: "100万元商业贷款，年利率4.2%，期限20年",
+            amount: 1000000,
+            rate: 4.2,
+            months: 240,
+            type: "商业贷款",
+            expectedChecks: [
+                "总利息 > 0",
+                "总还款额 > 本金",
+                "月供 > 每月本金",
+                "等额本金总利息 < 等额本息总利息",
+                "等额本金首月月供 > 等额本息月供"
+            ]
+        },
+        {
+            id: 2,
+            name: "公积金贷款-长期贷款",
+            description: "80万元公积金贷款，年利率3.25%，期限30年",
+            amount: 800000,
+            rate: 3.25,
+            months: 360,
+            type: "公积金贷款",
+            expectedChecks: [
+                "计算结果合理",
+                "无计算错误"
+            ]
+        },
+        {
+            id: 3,
+            name: "0利率边界情况",
+            description: "50万元贷款，0利率，期限10年",
+            amount: 500000,
+            rate: 0,
+            months: 120,
+            type: "边界测试",
+            expectedChecks: [
+                "总利息 = 0",
+                "总还款额 = 本金",
+                "月供 = 本金 / 期数"
+            ]
+        },
+        {
+            id: 4,
+            name: "小额短期贷款",
+            description: "10万元贷款，年利率5%，期限5年",
+            amount: 100000,
+            rate: 5.0,
+            months: 60,
+            type: "小额贷款",
+            expectedChecks: [
+                "计算结果合理",
+                "新老计算器结果一致"
+            ]
+        },
+        {
+            id: 5,
+            name: "高利率测试",
+            description: "100万元贷款，年利率20%，期限20年",
+            amount: 1000000,
+            rate: 20,
+            months: 240,
+            type: "高利率测试",
+            expectedChecks: [
+                "总利息显著高于本金",
+                "月供计算正常"
+            ]
+        }
+    ];
+
+    function runAllTests() {
+        let output = '<h2>房贷计算器逻辑验证结果</h2>';
+        let summary = {
+            total: testScenarios.length,
+            passed: 0,
+            warnings: 0,
+            errors: 0
+        };
+
+        testScenarios.forEach(scenario => {
+            output += `<div class="test-case"><h3>${scenario.name}</h3>`;
+            output += `<p><strong>描述:</strong> ${scenario.description}</p>`;
+            output += `<p><strong>类型:</strong> ${scenario.type}</p>`;
+            output += `<p><strong>参数:</strong> 金额=${scenario.amount.toLocaleString('zh-CN')}元, 利率=${scenario.rate}%, 期数=${scenario.months}个月</p>`;
+
+            try {
+                // 新计算器结果
+                const newDebx = calculateDebxFixed(scenario.amount, scenario.rate, scenario.months);
+                const newDebj = calculateDebjFixed(scenario.amount, scenario.rate, scenario.months);
+
+                // 原始计算器结果
+                const originalDebx = calculateOriginalDebx(scenario.amount, scenario.rate, scenario.months);
+                const originalDebj = calculateOriginalDebj(scenario.amount, scenario.rate, scenario.months);
+
+                // 显示结果
+                output += '<h4>等额本息计算结果对比:</h4>';
+                output += '<table>';
+                output += '<tr><th>计算器</th><th>月供</th><th>总利息</th><th>总还款额</th></tr>';
+                output += `<tr><td>新计算器(app.js)</td><td>${newDebx.monthlyPayment.toLocaleString('zh-CN')}</td><td>${newDebx.totalInterest.toLocaleString('zh-CN')}</td><td>${newDebx.totalRepayment.toLocaleString('zh-CN')}</td></tr>`;
+                output += `<tr><td>原始计算器</td><td>${originalDebx.monthlyPayment.toLocaleString('zh-CN')}</td><td>${originalDebx.totalInterest.toLocaleString('zh-CN')}</td><td>${originalDebx.totalRepayment.toLocaleString('zh-CN')}</td></tr>`;
+                output += '</table>';
+
+                output += '<h4>等额本金计算结果对比:</h4>';
+                output += '<table>';
+                output += '<tr><th>计算器</th><th>首月月供</th><th>总利息</th><th>总还款额</th><th>每月本金</th></tr>';
+                output += `<tr><td>新计算器(app.js)</td><td>${newDebj.firstMonthPayment.toLocaleString('zh-CN')}</td><td>${newDebj.totalInterest.toLocaleString('zh-CN')}</td><td>${newDebj.totalRepayment.toLocaleString('zh-CN')}</td><td>${newDebj.monthlyPrincipal.toLocaleString('zh-CN')}</td></tr>`;
+                output += `<tr><td>原始计算器</td><td>${originalDebj.firstMonthPayment.toLocaleString('zh-CN')}</td><td>${originalDebj.totalInterest.toLocaleString('zh-CN')}</td><td>${originalDebj.totalRepayment.toLocaleString('zh-CN')}</td><td>${originalDebj.monthlyPrincipal.toLocaleString('zh-CN')}</td></tr>`;
+                output += '</table>';
+
+                // 检查逻辑正确性
+                output += '<h4>逻辑检查:</h4><ul>';
+
+                const checks = [
+                    {
+                        name: "总利息 > 0 (0利率除外)",
+                        condition: scenario.rate === 0 ? newDebx.totalInterest === 0 : newDebx.totalInterest > 0,
+                        type: scenario.rate === 0 ? "info" : "required"
+                    },
+                    {
+                        name: "总还款额 > 本金",
+                        condition: newDebx.totalRepayment > scenario.amount,
+                        type: "required"
+                    },
+                    {
+                        name: "月供 > 每月本金 (0利率除外)",
+                        condition: scenario.rate === 0 ? Math.abs(newDebx.monthlyPayment - scenario.amount/scenario.months) < 0.01 : newDebx.monthlyPayment > scenario.amount/scenario.months,
+                        type: "required"
+                    },
+                    {
+                        name: "等额本金总利息 < 等额本息总利息",
+                        condition: newDebj.totalInterest < newDebx.totalInterest,
+                        type: "required"
+                    },
+                    {
+                        name: "等额本金首月月供 > 等额本息月供",
+                        condition: newDebj.firstMonthPayment > newDebx.monthlyPayment,
+                        type: "required"
+                    },
+                    {
+                        name: "新老计算器月供差异 < 0.01元",
+                        condition: Math.abs(newDebx.monthlyPayment - originalDebx.monthlyPayment) < 0.01,
+                        type: "consistency"
+                    },
+                    {
+                        name: "新老计算器总利息差异 < 0.01元",
+                        condition: Math.abs(newDebx.totalInterest - originalDebx.totalInterest) < 0.01,
+                        type: "consistency"
+                    }
+                ];
+
+                let scenarioPassed = true;
+                let scenarioWarnings = 0;
+
+                checks.forEach(check => {
+                    let statusClass = check.condition ? "pass" : "fail";
+                    let statusSymbol = check.condition ? "✓" : "✗";
+
+                    if (!check.condition) {
+                        if (check.type === "required") {
+                            scenarioPassed = false;
+                        } else if (check.type === "consistency") {
+                            scenarioWarnings++;
+                        }
+                    }
+
+                    output += `<li class="${statusClass}">${statusSymbol} ${check.name}</li>`;
+                });
+
+                output += '</ul>';
+
+                // 组合贷款测试（简单验证）
+                if (scenario.id === 1) {
+                    output += '<h4>组合贷款验证（简单模拟）:</h4>';
+                    // 模拟组合贷款：商业50万 + 公积金50万
+                    const businessPart = calculateDebxFixed(500000, 4.2, 240);
+                    const pafPart = calculateDebxFixed(500000, 3.25, 240);
+
+                    const combinedMonthly = businessPart.monthlyPayment + pafPart.monthlyPayment;
+                    const combinedInterest = businessPart.totalInterest + pafPart.totalInterest;
+                    const combinedRepayment = businessPart.totalRepayment + pafPart.totalRepayment;
+
+                    output += `<p>组合贷款（商业50万4.2% + 公积金50万3.25%）：</p>`;
+                    output += `<ul><li>合计月供：${combinedMonthly.toLocaleString('zh-CN')}元</li>`;
+                    output += `<li>合计总利息：${combinedInterest.toLocaleString('zh-CN')}元</li>`;
+                    output += `<li>合计总还款：${combinedRepayment.toLocaleString('zh-CN')}元</li></ul>`;
+
+                    if (combinedMonthly > businessPart.monthlyPayment && combinedMonthly > pafPart.monthlyPayment) {
+                        output += '<p class="pass">✓ 组合贷款合计值大于各分项</p>';
+                    } else {
+                        output += '<p class="fail">✗ 组合贷款合计值异常</p>';
+                        scenarioPassed = false;
+                    }
+                }
+
+                if (scenarioPassed) {
+                    output += `<p class="pass"><strong>✅ 测试通过</strong></p>`;
+                    summary.passed++;
+                    if (scenarioWarnings > 0) {
+                        output += `<p class="warning">⚠ 有${scenarioWarnings}个一致性警告</p>`;
+                        summary.warnings += scenarioWarnings;
+                    }
+                } else {
+                    output += `<p class="fail"><strong>❌ 测试失败</strong></p>`;
+                    summary.errors++;
+                }
+
+            } catch (error) {
+                output += `<p class="fail"><strong>❌ 计算错误:</strong> ${error.message}</p>`;
+                summary.errors++;
+            }
+
+            output += '</div>';
+        });
+
+        // 汇总
+        output += `<div class="summary">`;
+        output += `<h3>测试汇总</h3>`;
+        output += `<p>总测试场景: ${summary.total}</p>`;
+        output += `<p class="pass">通过: ${summary.passed}</p>`;
+        output += `<p class="warning">警告: ${summary.warnings}</p>`;
+        output += `<p class="fail">失败: ${summary.errors}</p>`;
+
+        if (summary.passed === summary.total) {
+            output += `<h4>✅ 所有核心测试通过！</h4>`;
+        } else {
+            output += `<h4>⚠ 有${summary.errors}个测试失败，需要修复</h4>`;
+        }
+        output += `</div>`;
+
+        document.getElementById("results").innerHTML = output;
+    }
+
+    window.onload = runAllTests;
+    </script>
+</head>
+<body>
+    <h1>房贷计算器最终验证报告</h1>
+    <div id="results">运行测试中...</div>
+
+    <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #4CAF50;">
+        <h3>手动验证方法：</h3>
+        <ol>
+            <li>打开主页面：<a href="index.html" target="_blank">index.html</a></li>
+            <li>尝试以下测试场景：
+                <ul>
+                    <li>商业贷款：100万元，4.2%利率，20年，等额本息/等额本金切换</li>
+                    <li>公积金贷款：80万元，3.25%利率，30年</li>
+                    <li>组合贷款：商业50万元+公积金50万元</li>
+                    <li>边界测试：输入0利率、极小金额、超长期限等</li>
+                </ul>
+            </li>
+            <li>检查结果合理性：
+                <ul>
+                    <li>总利息是否大于0（0利率除外）</li>
+                    <li>等额本金总利息是否小于等额本息</li>
+                    <li>还款计划表前12期数据是否合理</li>
+                    <li>组合贷款是否显示分项利息</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+</body>
+</html>

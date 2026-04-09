@@ -205,9 +205,9 @@
 
         // 验证商业贷款利率
         const businessRate = parseFloat(this.elements.businessRate.value);
-        if (isNaN(businessRate) || businessRate <= 0 || businessRate > 20) {
+        if (isNaN(businessRate) || businessRate < 0 || businessRate > 20) {
           isValid = false;
-          errors.push('商业贷款利率需在0.01-20%之间');
+          errors.push('商业贷款利率需在0-20%之间');
           this.elements.businessRate.classList.add('invalid');
         } else {
           this.elements.businessRate.classList.remove('invalid');
@@ -311,11 +311,21 @@
       };
 
       // 计算商业贷款部分
-      if (businessAmount > 0 && businessRate > 0) {
-        const monthly = businessAmount * businessRate * Math.pow(1 + businessRate, months) /
-                       (Math.pow(1 + businessRate, months) - 1);
-        const totalRepay = monthly * months;
-        const interest = totalRepay - businessAmount;
+      if (businessAmount > 0) {
+        let monthly, totalRepay, interest;
+
+        if (businessRate > 0) {
+          // 正常利率计算
+          monthly = businessAmount * businessRate * Math.pow(1 + businessRate, months) /
+                   (Math.pow(1 + businessRate, months) - 1);
+          totalRepay = monthly * months;
+          interest = totalRepay - businessAmount;
+        } else {
+          // 0利率特殊情况：月供 = 本金 / 月数，利息为0
+          monthly = businessAmount / months;
+          totalRepay = businessAmount;
+          interest = 0;
+        }
 
         result.businessInterest = Math.round(interest * 100) / 100;
         result.monthlyPayment += monthly;
@@ -324,11 +334,21 @@
       }
 
       // 计算公积金贷款部分
-      if (pafAmount > 0 && pafRate > 0) {
-        const monthly = pafAmount * pafRate * Math.pow(1 + pafRate, months) /
-                       (Math.pow(1 + pafRate, months) - 1);
-        const totalRepay = monthly * months;
-        const interest = totalRepay - pafAmount;
+      if (pafAmount > 0) {
+        let monthly, totalRepay, interest;
+
+        if (pafRate > 0) {
+          // 正常利率计算
+          monthly = pafAmount * pafRate * Math.pow(1 + pafRate, months) /
+                   (Math.pow(1 + pafRate, months) - 1);
+          totalRepay = monthly * months;
+          interest = totalRepay - pafAmount;
+        } else {
+          // 0利率特殊情况：月供 = 本金 / 月数，利息为0
+          monthly = pafAmount / months;
+          totalRepay = pafAmount;
+          interest = 0;
+        }
 
         result.pafInterest = Math.round(interest * 100) / 100;
         result.monthlyPayment += monthly;
@@ -364,16 +384,10 @@
       // 计算商业贷款部分
       if (businessAmount > 0 && businessRate > 0) {
         const monthlyPrincipal = businessAmount / months;
-        let totalInterest = 0;
-        let firstMonthPayment = 0;
-
-        for (let i = 0; i < months; i++) {
-          const interest = (businessAmount - i * monthlyPrincipal) * businessRate;
-          totalInterest += interest;
-          if (i === 0) {
-            firstMonthPayment = monthlyPrincipal + interest;
-          }
-        }
+        // 使用公式计算总利息：本金 × 月利率 × (还款月数 + 1) ÷ 2
+        const totalInterest = businessAmount * businessRate * (months + 1) / 2;
+        // 首月月供 = 每月应还本金 + (贷款总额 × 月利率)
+        const firstMonthPayment = monthlyPrincipal + businessAmount * businessRate;
 
         result.businessInterest = Math.round(totalInterest * 100) / 100;
         result.monthlyPayment += firstMonthPayment; // 等额本金显示第一个月还款
@@ -384,16 +398,10 @@
       // 计算公积金贷款部分
       if (pafAmount > 0 && pafRate > 0) {
         const monthlyPrincipal = pafAmount / months;
-        let totalInterest = 0;
-        let firstMonthPayment = 0;
-
-        for (let i = 0; i < months; i++) {
-          const interest = (pafAmount - i * monthlyPrincipal) * pafRate;
-          totalInterest += interest;
-          if (i === 0) {
-            firstMonthPayment = monthlyPrincipal + interest;
-          }
-        }
+        // 使用公式计算总利息：本金 × 月利率 × (还款月数 + 1) ÷ 2
+        const totalInterest = pafAmount * pafRate * (months + 1) / 2;
+        // 首月月供 = 每月应还本金 + (贷款总额 × 月利率)
+        const firstMonthPayment = monthlyPrincipal + pafAmount * pafRate;
 
         result.pafInterest = Math.round(totalInterest * 100) / 100;
         result.monthlyPayment += firstMonthPayment;
