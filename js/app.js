@@ -195,7 +195,7 @@
       // 验证商业贷款金额
       if (this.loanType === 0 || this.loanType === 2) {
         const businessAmount = parseFloat(this.elements.businessAmount.value);
-        if (!businessAmount || businessAmount <= 0 || businessAmount > 10000) {
+        if (isNaN(businessAmount) || businessAmount <= 0 || businessAmount > 10000) {
           isValid = false;
           errors.push('商业贷款金额需在1-10000万元之间');
           this.elements.businessAmount.classList.add('invalid');
@@ -205,7 +205,7 @@
 
         // 验证商业贷款利率
         const businessRate = parseFloat(this.elements.businessRate.value);
-        if (!businessRate || businessRate <= 0 || businessRate > 20) {
+        if (isNaN(businessRate) || businessRate <= 0 || businessRate > 20) {
           isValid = false;
           errors.push('商业贷款利率需在0.01-20%之间');
           this.elements.businessRate.classList.add('invalid');
@@ -217,7 +217,7 @@
       // 验证公积金贷款金额
       if (this.loanType === 1 || this.loanType === 2) {
         const pafAmount = parseFloat(this.elements.pafAmount.value);
-        if (!pafAmount || pafAmount <= 0 || pafAmount > 10000) {
+        if (isNaN(pafAmount) || pafAmount <= 0 || pafAmount > 10000) {
           isValid = false;
           errors.push('公积金贷款金额需在1-10000万元之间');
           this.elements.pafAmount.classList.add('invalid');
@@ -227,7 +227,7 @@
 
         // 验证公积金利率
         const pafRate = parseFloat(this.elements.pafRate.value);
-        if (!pafRate || pafRate <= 0 || pafRate > 10) {
+        if (isNaN(pafRate) || pafRate <= 0 || pafRate > 10) {
           isValid = false;
           errors.push('公积金贷款利率需在0.01-10%之间');
           this.elements.pafRate.classList.add('invalid');
@@ -238,7 +238,7 @@
 
       // 验证贷款年限
       const loanYears = parseInt(this.elements.loanYears.value);
-      if (!loanYears || loanYears < 1 || loanYears > 30) {
+      if (isNaN(loanYears) || loanYears < 1 || loanYears > 30) {
         isValid = false;
         errors.push('贷款年限需在1-30年之间');
         this.elements.loanYears.classList.add('invalid');
@@ -376,7 +376,7 @@
         }
 
         result.businessInterest = Math.round(totalInterest * 100) / 100;
-        result.monthlyPayment = firstMonthPayment; // 等额本金显示第一个月还款
+        result.monthlyPayment += firstMonthPayment; // 等额本金显示第一个月还款
         result.totalInterest += totalInterest;
         result.totalRepayment += businessAmount + totalInterest;
       }
