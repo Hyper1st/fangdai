@@ -169,7 +169,12 @@
 
         <!-- 详细还款表 -->
         <div class="form-group">
-          <h3 class="form-label">还款明细 (前12期)</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 class="form-label" style="margin: 0;">还款明细 (前12期)</h3>
+            <button id="toggle-details-btn" class="repayment-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+              展开所有还款明细
+            </button>
+          </div>
           <table class="details-table">
             <thead>
               <tr>

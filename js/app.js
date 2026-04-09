@@ -19,6 +19,9 @@
     // 当前还款方式：1=等额本息, 2=等额本金
     repayMethod: 1,
 
+    // 是否显示所有还款明细
+    showAllDetails: false,
+
     // DOM 元素缓存
     elements: {},
 
@@ -66,6 +69,9 @@
         resultPafInterest: document.getElementById('result-paf-interest'),
         resultDetailsBody: document.getElementById('result-details-body'),
 
+        // 切换明细按钮
+        toggleDetailsBtn: document.getElementById('toggle-details-btn'),
+
         // 状态消息
         statusMessage: document.getElementById('status-message')
       };
@@ -106,6 +112,13 @@
       // 贷款年限变化时更新利率
       if (this.elements.loanYears) {
         this.elements.loanYears.addEventListener('change', () => this.updateRateByTerm());
+      }
+
+      // 切换还款明细按钮
+      if (this.elements.toggleDetailsBtn) {
+        this.elements.toggleDetailsBtn.addEventListener('click', () => {
+          this.toggleAllDetails();
+        });
       }
     },
 
@@ -423,10 +436,23 @@
       return result;
     },
 
+    // 切换显示所有还款明细
+    toggleAllDetails: function() {
+      this.showAllDetails = !this.showAllDetails;
+
+      // 更新按钮文本
+      if (this.elements.toggleDetailsBtn) {
+        this.elements.toggleDetailsBtn.textContent = this.showAllDetails ? '收起还款明细' : '展开所有还款明细';
+      }
+
+      // 重新计算并更新显示
+      this.calculate();
+    },
+
     // 生成还款明细表
     generateRepaymentDetails: function(businessAmount, businessRate, pafAmount, pafRate, months, monthlyPayment, method) {
       const details = [];
-      const showMonths = Math.min(12, months);
+      const showMonths = this.showAllDetails ? months : Math.min(12, months);
 
       for (let i = 1; i <= showMonths; i++) {
         let monthDetail = {
@@ -498,6 +524,19 @@
 
     // 更新结果显示
     updateResults: function(result) {
+      // 更新还款明细标题
+      const detailsTitle = document.querySelector('.form-group .form-label[style*="margin: 0"]');
+      if (detailsTitle) {
+        const years = parseInt(this.elements.loanYears.value);
+        const months = years * 12;
+        if (this.showAllDetails) {
+          detailsTitle.textContent = `还款明细 (全部${months}期)`;
+        } else {
+          const showMonths = Math.min(12, months);
+          detailsTitle.textContent = `还款明细 (前${showMonths}期)`;
+        }
+      }
+
       // 更新主要结果卡片
       if (this.elements.monthlyPayment) {
         const paymentLabel = this.repayMethod === 1 ? '月供' : '首月月供';
@@ -566,6 +605,18 @@
 
     // 显示空状态
     showEmptyState: function() {
+      // 重置还款明细标题
+      const detailsTitle = document.querySelector('.form-group .form-label[style*="margin: 0"]');
+      if (detailsTitle) {
+        detailsTitle.textContent = '还款明细 (前12期)';
+      }
+
+      // 重置按钮状态
+      if (this.elements.toggleDetailsBtn) {
+        this.elements.toggleDetailsBtn.textContent = '展开所有还款明细';
+      }
+      this.showAllDetails = false;
+
       // 清空结果
       const resultElements = [
         this.elements.monthlyPayment,
@@ -577,6 +628,11 @@
       resultElements.forEach(el => {
         if (el) el.innerHTML = '';
       });
+
+      // 显示空状态提示
+      if (this.elements.resultDetailsBody) {
+        this.elements.resultDetailsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem;">输入参数后自动计算</td></tr>';
+      }
 
       // 清空分项利息显示
       if (this.elements.resultBusinessInterest) {
