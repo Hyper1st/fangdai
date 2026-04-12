@@ -22,6 +22,12 @@
     // 是否显示所有还款明细
     showAllDetails: false,
 
+    // 默认利率配置（作为 fallback）
+    defaultRateConfig: {
+      commercialRate: 4.2,
+      pafRate: 3.25
+    },
+
     // DOM 元素缓存
     elements: {},
 
@@ -34,9 +40,13 @@
     PAFShortRateArr: [3.5, 3.75, 4, 4.2, 4.45, 4.2, 4, 3.75, 3.5, 3.25, 3, 2.75, 2.75],
     PAFLongRateArr: [4.05, 4.3, 4.5, 4.7, 4.45, 4.7, 4.5, 4.25, 4, 3.75, 3.5, 3.25, 3.25],
 
+    // 动态利率配置（由initRateConfig()填充）
+    rateConfig: null,
+
     // 初始化
     init: function() {
       this.cacheElements();
+      this.initRateConfig();
       this.bindEvents();
       this.updateUI();
       this.calculate();
@@ -54,6 +64,11 @@
         loanYears: document.getElementById('loan-years'),
         businessRate: document.getElementById('business-rate'),
         pafRate: document.getElementById('paf-rate'),
+
+        // 提示文案元素
+        commercialHint: document.getElementById('current-commercial-rate-hint'),
+        pafHint: document.getElementById('current-paf-rate-hint'),
+        rateLastUpdated: document.getElementById('rate-last-updated'),
 
         // 还款方式
         repayBtns: document.querySelectorAll('.repayment-btn'),
@@ -75,6 +90,55 @@
         // 状态消息
         statusMessage: document.getElementById('status-message')
       };
+    },
+
+    // 初始化利率配置
+    initRateConfig: function() {
+      try {
+        // 读取配置，提供降级默认值
+        const config = window.RATE_CONFIG || {};
+        const commercialRate = config.commercial_rate || this.defaultRateConfig.commercialRate;
+        const pafRate = config.paf_rate || this.defaultRateConfig.pafRate;
+        const commercialHint = config.commercial_hint || `最新基准: ${commercialRate}%`;
+        const pafHint = config.paf_hint || `最新基准: ${pafRate}%`;
+        const lastUpdated = config.last_updated || '';
+
+        // 设置输入框默认值（仅在值为空时设置）
+        if (this.elements.businessRate && this.elements.businessRate.value === '') {
+          this.elements.businessRate.value = commercialRate;
+        }
+        if (this.elements.pafRate && this.elements.pafRate.value === '') {
+          this.elements.pafRate.value = pafRate;
+        }
+
+        // 更新提示文案
+        if (this.elements.commercialHint) {
+          this.elements.commercialHint.textContent = commercialHint;
+        }
+        if (this.elements.pafHint) {
+          this.elements.pafHint.textContent = pafHint;
+        }
+
+        // 更新最后更新时间
+        if (this.elements.rateLastUpdated && lastUpdated) {
+          this.elements.rateLastUpdated.textContent = `利率数据更新于: ${lastUpdated}`;
+        }
+
+        // 存储配置供其他函数使用
+        this.rateConfig = {
+          commercialRate,
+          pafRate
+        };
+
+        console.log('利率配置初始化完成:', this.rateConfig);
+      } catch (error) {
+        console.warn('利率配置初始化失败，使用默认值:', error);
+        // 设置默认值作为降级
+        this.rateConfig = {
+          commercialRate: this.defaultRateConfig.commercialRate,
+          pafRate: this.defaultRateConfig.pafRate
+        };
+      }
     },
 
     // 绑定事件
@@ -185,19 +249,27 @@
       if (!this.elements.loanYears || !this.elements.businessRate) return;
 
       const years = parseInt(this.elements.loanYears.value);
-      let rate = 4.2; // 默认值
+
+      // 从配置读取默认值，提供降级
+      const defaultRate = (this.rateConfig && this.rateConfig.commercialRate) || this.defaultRateConfig.commercialRate;
+      let rate = defaultRate;
 
       // 简单逻辑：根据年限设置基准利率
       if (years <= 5) {
-        rate = 4.2;
+        rate = defaultRate; // 5年及以下使用默认利率
       } else if (years <= 10) {
-        rate = 4.5;
+        rate = defaultRate + 0.3; // 6-10年：默认利率+0.3%
       } else {
-        rate = 4.8;
+        rate = defaultRate + 0.6; // 10年以上：默认利率+0.6%
       }
 
-      this.elements.businessRate.value = rate;
-      this.calculate();
+      // 仅在用户未手动修改过利率时更新（当前值等于默认值时）
+      const currentRate = parseFloat(this.elements.businessRate.value);
+      if (currentRate === defaultRate || isNaN(currentRate)) {
+        this.elements.businessRate.value = rate;
+        this.calculate();
+      }
+      // 如果用户已手动修改利率，则保留用户输入，不自动更新
     },
 
     // 验证输入
