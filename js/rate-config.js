@@ -5,11 +5,11 @@
 window.RATE_CONFIG = {
   // 当前利率配置
   commercial_rate: 3.5,      // 商业贷款基准利率 (%)
-  paf_rate: 3.25,           // 公积金贷款基准利率 (%)
+  paf_rate: 2.6,           // 公积金贷款基准利率 (%)
 
   // 提示文案
   commercial_hint: "最新基准: 3.5%",
-  paf_hint: "最新基准: 3.25%",
+  paf_hint: "最新基准: 2.6%",
 
   // 元数据
   last_updated: "2026-03-20",
