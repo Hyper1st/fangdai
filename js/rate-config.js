@@ -4,17 +4,17 @@
 
 window.RATE_CONFIG = {
   // 当前利率配置
-  commercial_rate: 4.2,      // 商业贷款基准利率 (%)
-  paf_rate: 3.25,           // 公积金贷款基准利率 (%)
+  commercial_rate: 3.25,      // 商业贷款基准利率 (%)
+  paf_rate: 2.6,           // 公积金贷款基准利率 (%)
 
   // 提示文案
-  commercial_hint: "最新基准: 4.2%",
-  paf_hint: "最新基准: 3.25%",
+  commercial_hint: "最新基准: 3.25%",
+  paf_hint: "最新基准: 2.6%",
 
   // 元数据
   last_updated: "2026-04-11",
   source: "manual-config",
 
   // 说明
-  note: "数据仅供参考，实际利率以银行审批为准"
+  note: "数据仅供参考，实际利率以银行审批为准。当前默认参考值按首套5年以上个人住房公积金贷款利率设置"
 };
