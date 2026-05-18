@@ -8,6 +8,8 @@
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
+  --accent: #c9922c;
+  --accent-light: #faf3e6;
 
   /* 中性色 */
   --gray-50: #f8fafc;
@@ -254,6 +256,11 @@ body {
   font-weight: 700;
   color: var(--primary);
   margin: var(--space-xs) 0;
+}
+
+#monthly-payment {
+  font-size: 2.25rem;
+  color: var(--accent);
 }
 
 .result-card .label {
