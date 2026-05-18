@@ -79,6 +79,11 @@ body {
   letter-spacing: -0.025em;
 }
 
+.logo h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .logo p {
   font-size: 0.875rem;
   opacity: 0.9;
