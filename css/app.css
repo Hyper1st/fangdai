@@ -10,6 +10,8 @@
   --danger: #ef4444;
   --accent: #c9922c;
   --accent-light: #faf3e6;
+  --font-heading: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Consolas", "Menlo", monospace;
 
   /* 中性色 */
   --gray-50: #f8fafc;
@@ -28,8 +30,8 @@
   --border-radius: 12px;
   --border-radius-sm: 8px;
   --border-radius-xs: 4px;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.08);
 
   /* 间距 */
   --space-xs: 0.5rem;
@@ -44,6 +46,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
 }
 
 body {
@@ -76,6 +82,7 @@ body {
 }
 
 .logo h1 {
+  font-family: var(--font-heading);
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -116,6 +123,7 @@ body {
 }
 
 .card-title {
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--gray-900);
@@ -252,6 +260,7 @@ body {
 }
 
 .result-card .value {
+  font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary);
@@ -259,6 +268,7 @@ body {
 }
 
 #monthly-payment {
+  font-family: var(--font-mono);
   font-size: 2.25rem;
   color: var(--accent);
 }
