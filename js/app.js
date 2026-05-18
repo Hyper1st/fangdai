@@ -1,5 +1,5 @@
 // 房贷计算器 - 现代交互层 v1.0
-// 使用 Zepto 和原始计算器逻辑
+// 房贷计算器核心逻辑
 
 (function() {
   'use strict';
@@ -130,9 +130,7 @@
           pafRate
         };
 
-        console.log('利率配置初始化完成:', this.rateConfig);
       } catch (error) {
-        console.warn('利率配置初始化失败，使用默认值:', error);
         // 设置默认值作为降级
         this.rateConfig = {
           commercialRate: this.defaultRateConfig.commercialRate,
@@ -718,12 +716,7 @@
 
   // 页面加载完成后初始化应用
   document.addEventListener('DOMContentLoaded', function() {
-    // 确保Zepto已加载
-    if (window.$) {
-      App.init();
-    } else {
-      console.error('Zepto未加载');
-    }
+    App.init();
   });
 
   // 暴露App到全局（用于调试）
