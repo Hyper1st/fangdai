@@ -57,6 +57,18 @@
     </div>
   </header>
 
+  <div class="hero-tagline">
+    <div class="container">
+      <span>3秒精准计算月供</span>
+      <span class="hero-sep">·</span>
+      <span>支持商业/公积金/组合贷</span>
+      <span class="hero-sep">·</span>
+      <span>LPR利率动态参考</span>
+      <span class="hero-sep">·</span>
+      <span>完全免费</span>
+    </div>
+  </div>
+
   <main class="container">
     <div id="status-message" class="status-message info"></div>
 
@@ -145,7 +157,7 @@
       </div>
 
       <!-- 结果区 -->
-      <div class="card" style="border-top: 3px solid var(--accent);">
+      <div class="card" id="results" style="border-top: 3px solid var(--accent);">
         <h2 class="card-title">计算结果</h2>
 
         <!-- 主要结果卡片 -->
@@ -287,6 +299,12 @@
              (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
       </div>
+    </div>
+
+    <div class="mobile-nav-bar">
+      <span class="mobile-nav-label">当前月供</span>
+      <span class="mobile-nav-value" id="mobile-monthly">--</span>
+      <a href="#results" class="mobile-nav-link">查看明细</a>
     </div>
   </main>
 

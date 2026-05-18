@@ -616,6 +616,11 @@
         `;
       }
 
+      var mobileMonthly = document.getElementById('mobile-monthly');
+      if (mobileMonthly) {
+        mobileMonthly.textContent = result.monthlyPayment.toLocaleString('zh-CN') + ' 元';
+      }
+
       if (this.elements.totalInterest) {
         this.elements.totalInterest.innerHTML = `
           <div class="value">${result.totalInterest.toLocaleString('zh-CN')} 元</div>
