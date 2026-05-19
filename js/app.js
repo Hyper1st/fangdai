@@ -668,6 +668,18 @@
             </tr>
           `;
         });
+        const totalPayment = result.details.reduce((s, d) => s + d.total, 0);
+        const totalInterest = result.details.reduce((s, d) => s + d.interest, 0);
+        const totalPrincipal = result.details.reduce((s, d) => s + d.principal, 0);
+        html += `
+          <tr class="total-row">
+            <td>合计</td>
+            <td>${totalPayment.toLocaleString('zh-CN')}</td>
+            <td>${totalInterest.toLocaleString('zh-CN')}</td>
+            <td>${totalPrincipal.toLocaleString('zh-CN')}</td>
+            <td>—</td>
+          </tr>
+        `;
         this.elements.resultDetailsBody.innerHTML = html;
       }
 

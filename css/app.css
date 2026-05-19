@@ -320,13 +320,22 @@ body {
 }
 
 .details-table th {
-  background: var(--gray-100);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
   font-weight: 600;
-  color: var(--gray-700);
+  border-bottom: none;
 }
 
 .details-table tr:hover {
   background: var(--gray-50);
+}
+
+.details-table .total-row td {
+  font-weight: 700;
+  background: #faf3e6;
+  border-top: 2px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
 }
 
 /* 状态消息 */
@@ -714,6 +723,10 @@ body {
   .details-table td {
     padding: 0.5rem 0.25rem;
     font-size: 0.8rem;
+  }
+
+  .details-table .total-row td {
+    font-size: 0.85rem;
   }
 
   .guide-content {
