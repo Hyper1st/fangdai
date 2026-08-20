@@ -12,7 +12,7 @@ window.RATE_CONFIG = {
   paf_hint: "最新基准: 2.6%",
 
   // 元数据
-  last_updated: "2026-07-20",
+  last_updated: "2026-08-20",
   source: "mock-generated",
 
   // 说明
